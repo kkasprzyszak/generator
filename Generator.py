@@ -109,7 +109,7 @@ def publishUsersToKafka(usersFilePath, address, topic, delay):
             message = getMessageForUser(elem)
             if message == None:
                 continue;
-            # producer.send('data', value=message)
+            producer.send(topic, value=message)
             print(message)
             sleep(delay)
     except KeyboardInterrupt:
@@ -132,8 +132,8 @@ def publishPostsToKafka(postsFilePath, address, topic, delay):
 
             if message == None:
                 continue;
-            # producer.send('data', value=message)
-            print(message)
+            producer.send(topic, value=message)
+            #print(message)
             sleep(delay)
     except KeyboardInterrupt:
         producer.close()
@@ -144,10 +144,6 @@ parser = argparse.ArgumentParser(description='Kafka data generator')
 parser.add_argument('kafka', help='address of one of kafka servers')
 parser.add_argument('filePath', help='the path to the source file')
 args = parser.parse_args()
-
-#producer = KafkaProducer(bootstrap_servers=[f'{args.kafka}:9092'],
-#                         value_serializer=lambda x: json.dumps(x).encode('utf-8'),
-#                         api_version=(2, 6, 0))
 
 postsFilePath = args.filePath + '\Posts.xml'
 print(postsFilePath)
