@@ -106,7 +106,7 @@ def publishUsersToKafka(usersFilePath, address, topic, delay):
             message = getMessageForUser(elem)
             if message == None:
                 continue;
-       #     producer.send(topic, value=message)
+            producer.send(topic, value=message)
             cnt += 1
             if (cnt % 100 == 0):
                 logger.info('[Users] Sent {0} messages'.format(cnt))
@@ -134,7 +134,7 @@ def publishPostsToKafka(postsFilePath, address, topic, delay):
 
             if message == None:
                 continue;
-           # producer.send(topic, value=message)
+            producer.send(topic, value=message)
             cnt += 1
             if (cnt % 100 == 0):
                 logger.info('[Posts] Sent {0} messages'.format(cnt))
