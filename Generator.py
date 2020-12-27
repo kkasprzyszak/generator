@@ -3,10 +3,10 @@ from datetime import datetime
 import json
 import argparse
 import threading, time
+import logging
 
 from kafka import KafkaProducer
 import xml.etree.ElementTree as etree
-
 
 def getMessageForPost(elem):
     try:
@@ -55,9 +55,10 @@ def getMessageForPost(elem):
 
         return message;
     except:
-        print('[Posts] Failed to process:')
+        error = '[Posts] Failed to process:'
         for key, value in elem.attrib.items():
-            print(key, ' : ', value)
+            error += '\n' + key + ' : ' + value
+        logger.error(error)
         return None;
 
 def getMessageForUser(elem):
@@ -82,14 +83,11 @@ def getMessageForUser(elem):
 
         return message;
     except:
-        print('[Users] Failed to process:')
+        error = '[Users] Failed to process:'
         for key, value in elem.attrib.items():
-            print(key, ' : ', value)
+            error += '\n' + key + ' : ' + value
+        logger.error(error)
         return None;
-
-
-
-
 
 
 def publishUsersToKafka(usersFilePath, address, topic, delay):
@@ -97,57 +95,79 @@ def publishUsersToKafka(usersFilePath, address, topic, delay):
                              value_serializer=lambda x: json.dumps(x).encode('utf-8'),
                              api_version=(2, 6, 0))
 
-    print('[Users] Producer started')
+    logger.info('[Users] Producer started')
 
     data = etree.parse(usersFilePath)
     root = data.getroot()
 
+    cnt = 0;
     try:
         for elem in root:
             message = getMessageForUser(elem)
             if message == None:
                 continue;
-            producer.send(topic, value=message)
-            print(message)
+       #     producer.send(topic, value=message)
+            cnt += 1
+            if (cnt % 100 == 0):
+                logger.info('[Users] Sent {0} messages'.format(cnt))
             sleep(delay)
     except KeyboardInterrupt:
         producer.close()
-
+    except Exception as err:
+        logger.error("[Users] Unexpected exception: {}".format(err.message))
+        producer.close()
 
 def publishPostsToKafka(postsFilePath, address, topic, delay):
     producer = KafkaProducer(bootstrap_servers=[f'{address}:9092'],
                              value_serializer=lambda x: json.dumps(x).encode('utf-8'),
                              api_version=(2, 6, 0))
 
-    print('[Posts] Producer started')
+    logger.info('[Posts] Producer started')
 
     data = etree.parse(postsFilePath)
     root = data.getroot()
 
+    cnt = 0;
     try:
         for elem in root:
             message = getMessageForPost(elem)
 
             if message == None:
                 continue;
-            producer.send(topic, value=message)
-            #print(message)
+           # producer.send(topic, value=message)
+            cnt += 1
+            if (cnt % 100 == 0):
+                logger.info('[Posts] Sent {0} messages'.format(cnt))
             sleep(delay)
     except KeyboardInterrupt:
+        producer.close()
+    except Exception as err:
+        logger.error("[Posts] Unexpected exception: {}".format(err.message))
         producer.close()
 
 
 
-parser = argparse.ArgumentParser(description='Kafka data generator')
-parser.add_argument('kafka', help='address of one of kafka servers')
-parser.add_argument('filePath', help='the path to the source file')
+#setup logger
+logger = logging.getLogger('MessageGenerator')
+logger.setLevel(logging.DEBUG)
+# create file handler which logs even debug messages
+fh = logging.FileHandler('messageGenerator.log')
+fh.setLevel(logging.DEBUG)
+formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+fh.setFormatter(formatter)
+logger.addHandler(fh)
+
+#parse input arguments
+parser = argparse.ArgumentParser(description='Kafka message generator')
+parser.add_argument('kafka', help='Address of one of kafka servers')
+parser.add_argument('filePath', help='The path to the source file')
 args = parser.parse_args()
 
-postsFilePath = args.filePath + '/Posts.xml'
-print(postsFilePath)
+postsFilePath = args.filePath + 'Posts.xml'
+logger.info('[Posts] File path:' + postsFilePath)
 
-usersFilePath = args.filePath + '/Users.xml'
-print(usersFilePath)
+usersFilePath = args.filePath + 'Users.xml'
+logger.info('[Users] File path:' + usersFilePath)
 
 
 t1 = threading.Thread(name='1', target=publishUsersToKafka, args=[usersFilePath, args.kafka, 'users', 0.1])
