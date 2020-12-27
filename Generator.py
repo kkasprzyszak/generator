@@ -1,12 +1,10 @@
 from time import sleep
 from datetime import datetime
 import json
-import random
 import argparse
 import threading, time
 
 from kafka import KafkaProducer
-#from xml.dom import minidom
 import xml.etree.ElementTree as etree
 
 
@@ -145,10 +143,10 @@ parser.add_argument('kafka', help='address of one of kafka servers')
 parser.add_argument('filePath', help='the path to the source file')
 args = parser.parse_args()
 
-postsFilePath = args.filePath + '\Posts.xml'
+postsFilePath = args.filePath + '/Posts.xml'
 print(postsFilePath)
 
-usersFilePath = args.filePath + '\\Users.xml'
+usersFilePath = args.filePath + '/Users.xml'
 print(usersFilePath)
 
 
