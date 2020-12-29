@@ -64,27 +64,27 @@ def getMessageForPost(elem):
 def getMessageForUser(elem):
     try:
 
-        message = {}
-        for key, value in elem.attrib.items():
-            message[key] = value
+        #message = {}
+        #for key, value in elem.attrib.items():
+        #    message[key] = value
 
-        # message = {'Id': int(elem.attrib['Id']),
-        #            'Reputation': int(elem.attrib['Reputation']),
-        #            'DisplayName': elem.attrib['DisplayName'],
-        #            'CreationDate': elem.attrib['CreationDate']}
-        #
-        # if 'Location' in elem.attrib:
-        #     message['Location'] = elem.attrib['Location'];
-        # if 'AboutMe' in elem.attrib:
-        #     message['AboutMe'] = elem.attrib['AboutMe'];
-        # if 'Age' in elem.attrib:
-        #     message['Age'] = int(elem.attrib['Age']);
-        # if 'Views' in elem.attrib:
-        #     message['Views'] = int(elem.attrib['Views']);
-        # if 'UpVotes' in elem.attrib:
-        #     message['UpVotes'] = int(elem.attrib['UpVotes']);
-        # if 'DownVotes' in elem.attrib:
-        #     message['DownVotes'] = int(elem.attrib['DownVotes']);
+        message = {'Id': int(elem.attrib['Id']),
+                   'Reputation': int(elem.attrib['Reputation']),
+                   'DisplayName': elem.attrib['DisplayName'],
+                   'CreationDate': elem.attrib['CreationDate']}
+
+        if 'Location' in elem.attrib:
+            message['Location'] = elem.attrib['Location'];
+        if 'AboutMe' in elem.attrib:
+            message['AboutMe'] = elem.attrib['AboutMe'];
+        if 'Age' in elem.attrib:
+            message['Age'] = int(elem.attrib['Age']);
+        if 'Views' in elem.attrib:
+            message['Views'] = int(elem.attrib['Views']);
+        if 'UpVotes' in elem.attrib:
+            message['UpVotes'] = int(elem.attrib['UpVotes']);
+        if 'DownVotes' in elem.attrib:
+            message['DownVotes'] = int(elem.attrib['DownVotes']);
 
         return message;
     except:
@@ -108,11 +108,11 @@ def publishUsersToKafka(usersFilePath, address, topic, delay):
     cnt = 0;
     try:
         for elem in root:
-            message = getMessageForUser(elem)
-            logger.info(json.dumps(message))
-            if message == None:
+            registeredUser = getMessageForUser(elem)
+            logger.info(json.dumps(registeredUser))
+            if registeredUser == None:
                 continue;
-            producer.send(topic, value=message)
+            producer.send(topic, value=registeredUser)
             cnt += 1
             if (cnt % 100 == 0):
                 logger.info('[Users] Sent {0} messages'.format(cnt))
