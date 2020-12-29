@@ -122,7 +122,7 @@ def publishUsersToKafka(usersFilePath, address, topic, delay):
     except KeyboardInterrupt:
         producer.close()
     except Exception as err:
-        logger.error("[Users] Unexpected exception: {}".format(err.message))
+        logger.error("[Users] Unexpected exception: {0}".format(err.message))
         producer.close()
     finally:
         logger.info("[Users] Producer finished")
