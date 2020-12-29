@@ -68,7 +68,7 @@ def getMessageForUser(elem):
         #for key, value in elem.attrib.items():
         #    message[key] = value
 
-        message = {'Id': int(elem.attrib['Id']),
+        message = {'_id': int(elem.attrib['Id']),
                    'Reputation': int(elem.attrib['Reputation']),
                    'DisplayName': elem.attrib['DisplayName'],
                    'CreationDate': elem.attrib['CreationDate']}
