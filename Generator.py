@@ -63,23 +63,28 @@ def getMessageForPost(elem):
 
 def getMessageForUser(elem):
     try:
-        message = {'Id': int(elem.attrib['Id']),
-                   'Reputation': int(elem.attrib['Reputation']),
-                   'DisplayName': elem.attrib['DisplayName'],
-                   'CreationDate': elem.attrib['CreationDate']}
 
-        if 'Location' in elem.attrib:
-            message['Location'] = elem.attrib['Location'];
-        if 'AboutMe' in elem.attrib:
-            message['AboutMe'] = elem.attrib['AboutMe'];
-        if 'Age' in elem.attrib:
-            message['Age'] = int(elem.attrib['Age']);
-        if 'Views' in elem.attrib:
-            message['Views'] = int(elem.attrib['Views']);
-        if 'UpVotes' in elem.attrib:
-            message['UpVotes'] = int(elem.attrib['UpVotes']);
-        if 'DownVotes' in elem.attrib:
-            message['DownVotes'] = int(elem.attrib['DownVotes']);
+        message = {}
+        for key, value in elem.attrib.items():
+            message[key] = value
+
+        # message = {'Id': int(elem.attrib['Id']),
+        #            'Reputation': int(elem.attrib['Reputation']),
+        #            'DisplayName': elem.attrib['DisplayName'],
+        #            'CreationDate': elem.attrib['CreationDate']}
+        #
+        # if 'Location' in elem.attrib:
+        #     message['Location'] = elem.attrib['Location'];
+        # if 'AboutMe' in elem.attrib:
+        #     message['AboutMe'] = elem.attrib['AboutMe'];
+        # if 'Age' in elem.attrib:
+        #     message['Age'] = int(elem.attrib['Age']);
+        # if 'Views' in elem.attrib:
+        #     message['Views'] = int(elem.attrib['Views']);
+        # if 'UpVotes' in elem.attrib:
+        #     message['UpVotes'] = int(elem.attrib['UpVotes']);
+        # if 'DownVotes' in elem.attrib:
+        #     message['DownVotes'] = int(elem.attrib['DownVotes']);
 
         return message;
     except:
@@ -104,6 +109,7 @@ def publishUsersToKafka(usersFilePath, address, topic, delay):
     try:
         for elem in root:
             message = getMessageForUser(elem)
+            logger.info(json.dumps(message))
             if message == None:
                 continue;
             producer.send(topic, value=message)
@@ -111,11 +117,16 @@ def publishUsersToKafka(usersFilePath, address, topic, delay):
             if (cnt % 100 == 0):
                 logger.info('[Users] Sent {0} messages'.format(cnt))
             sleep(delay)
+            if cnt > 10:
+                break
     except KeyboardInterrupt:
         producer.close()
     except Exception as err:
         logger.error("[Users] Unexpected exception: {}".format(err.message))
         producer.close()
+    finally:
+        logger.info("[Users] Producer finished")
+
 
 def publishPostsToKafka(postsFilePath, address, topic, delay):
     producer = KafkaProducer(bootstrap_servers=[f'{address}:9092'],
@@ -131,10 +142,10 @@ def publishPostsToKafka(postsFilePath, address, topic, delay):
     try:
         for elem in root:
             message = getMessageForPost(elem)
-
+            print(json.dumps(message))
             if message == None:
                 continue;
-            producer.send(topic, value=message)
+            #producer.send(topic, value=message)
             cnt += 1
             if (cnt % 100 == 0):
                 logger.info('[Posts] Sent {0} messages'.format(cnt))
@@ -171,7 +182,7 @@ logger.info('[Users] File path:' + usersFilePath)
 
 
 t1 = threading.Thread(name='1', target=publishUsersToKafka, args=[usersFilePath, args.kafka, 'users', 0.1])
-t2 = threading.Thread(name='2', target=publishPostsToKafka, args=[postsFilePath, args.kafka, 'posts', 1])
+#t2 = threading.Thread(name='2', target=publishPostsToKafka, args=[postsFilePath, args.kafka, 'posts', 1])
 
 t1.start()
-t2.start()
+#t2.start()
