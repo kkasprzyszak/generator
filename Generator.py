@@ -108,7 +108,9 @@ def publishUsersToKafka(usersFilePath, address, topic, delay):
     cnt = 0;
     try:
         for elem in root:
-            registeredUser = getMessageForUser(elem)
+            registeredUser = {}
+            for key, value in elem.attrib.items():
+               registeredUser[key] = value
             logger.info(json.dumps(registeredUser))
             if registeredUser == None:
                 continue;
