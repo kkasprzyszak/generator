@@ -68,7 +68,7 @@ def getMessageForUser(elem):
         #for key, value in elem.attrib.items():
         #    message[key] = value
 
-        message = { #'_id': int(elem.attrib['Id']),
+        message = { 
                    'Reputation': int(elem.attrib['Reputation']),
                    'DisplayName': elem.attrib['DisplayName'],
                    'CreationDate': elem.attrib['CreationDate']}
@@ -108,9 +108,10 @@ def publishUsersToKafka(usersFilePath, address, topic, delay):
     cnt = 0;
     try:
         for elem in root:
-            registeredUser = {}
-            for key, value in elem.attrib.items():
-               registeredUser[key] = value
+            #registeredUser = {}
+            #for key, value in elem.attrib.items():
+            #   registeredUser[key] = value
+            registeredUser = getMessageForUser(elem)
             logger.info(json.dumps(registeredUser))
             if registeredUser == None:
                 continue;
