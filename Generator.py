@@ -144,15 +144,21 @@ def publishPostsToKafka(postsFilePath, address, topic, delay):
     cnt = 0;
     try:
         for elem in root:
-            message = getMessageForPost(elem)
+           # message = getMessageForPost(elem)
+            message = {}
+            for key, value in elem.attrib.items():
+               message[key] = value
             print(json.dumps(message))
-            if message == None:
-                continue;
+            logger.info(json.dumps(message))
+            #if message == None:
+            #    continue;
             #producer.send(topic, value=message)
             cnt += 1
             if (cnt % 100 == 0):
                 logger.info('[Posts] Sent {0} messages'.format(cnt))
             sleep(delay)
+            if cnt > 20:
+                break
     except KeyboardInterrupt:
         producer.close()
     except Exception as err:
@@ -184,8 +190,8 @@ usersFilePath = args.filePath + 'Users.xml'
 logger.info('[Users] File path:' + usersFilePath)
 
 
-t1 = threading.Thread(name='1', target=publishUsersToKafka, args=[usersFilePath, args.kafka, 'users', 0.1])
-#t2 = threading.Thread(name='2', target=publishPostsToKafka, args=[postsFilePath, args.kafka, 'posts', 1])
+#t1 = threading.Thread(name='1', target=publishUsersToKafka, args=[usersFilePath, args.kafka, 'users', 0.1])
+t2 = threading.Thread(name='2', target=publishPostsToKafka, args=[postsFilePath, args.kafka, 'posts', 0.1])
 
-t1.start()
-#t2.start()
+#t1.start()
+t2.start()
