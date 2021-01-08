@@ -152,7 +152,7 @@ def publishPostsToKafka(postsFilePath, address, topic, delay):
             logger.info(json.dumps(message))
             #if message == None:
             #    continue;
-            #producer.send(topic, value=message)
+            producer.send(topic, value=message)
             cnt += 1
             if (cnt % 100 == 0):
                 logger.info('[Posts] Sent {0} messages'.format(cnt))
