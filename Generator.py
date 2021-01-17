@@ -24,21 +24,19 @@ def publishPostsToKafka(postsFilePath, address, topic, delay):
             message = {}
             for key, value in elem.attrib.items():
                message[key] = value
-            print(json.dumps(message))
-            logger.info(json.dumps(message))
+            #print(json.dumps(message))
+            #logger.info(json.dumps(message))
             producer.send(topic, value=message)
             cnt += 1
             if (cnt % 1000 == 0):
                 logger.info('[Posts] Sent {0} messages'.format(cnt))
+                logger.info(json.dumps(message))
             sleep(delay)
-            if cnt > 10:
-                break
     except KeyboardInterrupt:
         producer.close()
     except Exception as err:
         logger.error("[Posts] Unexpected exception: {}".format(err.message))
         producer.close()
-
 
 
 #setup logger
@@ -53,13 +51,14 @@ logger.addHandler(fh)
 
 #parse input arguments
 parser = argparse.ArgumentParser(description='Kafka message generator')
-parser.add_argument('kafka', help='Address of one of kafka servers')
+parser.add_argument('kafkaAddress', help='Address of one of kafka servers')
 parser.add_argument('filePath', help='The path to the source file')
+parser.add_argument('topicName', help='Kafka topic')
 args = parser.parse_args()
 
-postsFilePath = args.filePath + 'Posts.xml'
-logger.info('[Posts] File path:' + postsFilePath)
+postsFilePath = args.filePath
+logger.info('[Posts] File path: {0}, Kafka address: {1}, Topic name: {2}'.format(postsFilePath, args.kafkaAddress, args.topicName))
 
-t2 = threading.Thread(name='2', target=publishPostsToKafka, args=[postsFilePath, args.kafka, 'posts', 0.1])
+t2 = threading.Thread(name='2', target=publishPostsToKafka, args=[postsFilePath, args.kafkaAddress, args.topicName, 0.1])
 
 t2.start()
