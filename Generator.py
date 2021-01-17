@@ -3,9 +3,10 @@ import json
 import argparse
 import threading, time
 import logging
-
 from kafka import KafkaProducer
 import xml.etree.ElementTree as etree
+from datetime import datetime
+
 
 
 def publishPostsToKafka(postsFilePath, address, topic, delay):
@@ -24,18 +25,26 @@ def publishPostsToKafka(postsFilePath, address, topic, delay):
             message = {}
             for key, value in elem.attrib.items():
                message[key] = value
+
             #print(json.dumps(message))
             #logger.info(json.dumps(message))
-            producer.send(topic, value=message)
+
+            creationDate = datetime.strptime(message["CreationDate"], '%Y-%m-%dT%H:%M:%S.%f')
+
+            producer.send(topic, value=message, timestamp_ms=creationDate.timestamp() * 1000)
             cnt += 1
             if (cnt % 1000 == 0):
                 logger.info('[Posts] Sent {0} messages'.format(cnt))
                 logger.info(json.dumps(message))
+
+            if cnt > 30:
+                break;
             sleep(delay)
+        logger.info('[Posts] Producer completed')
     except KeyboardInterrupt:
         producer.close()
     except Exception as err:
-        logger.error("[Posts] Unexpected exception: {}".format(err.message))
+        logger.error("[Posts] Unexpected exception: {}".format(err))
         producer.close()
 
 
