@@ -31,7 +31,7 @@ def publishPostsToKafka(postsFilePath, address, topic, delay):
 
             creationDate = datetime.strptime(message["CreationDate"], '%Y-%m-%dT%H:%M:%S.%f')
 
-            producer.send(topic, value=message, timestamp_ms=creationDate.timestamp() * 1000)
+            producer.send(topic, value=message)
             cnt += 1
             if (cnt % 1000 == 0):
                 logger.info('[Posts] Sent {0} messages'.format(cnt))
