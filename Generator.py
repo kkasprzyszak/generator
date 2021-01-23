@@ -19,7 +19,7 @@ def publishPostsToKafka(postsFilePath, address, topic, delay):
     data = etree.parse(postsFilePath)
     root = data.getroot()
 
-    lastCreationDate = datetime.strptime('2011-07-28T19:51:11.813', '%Y-%m-%dT%H:%M:%S.%f')
+    lastCreationDate = datetime.strptime('2011-10-20T20:34:33.673', '%Y-%m-%dT%H:%M:%S.%f')
     cnt = 0;
     try:
         for elem in root:
@@ -72,6 +72,6 @@ args = parser.parse_args()
 postsFilePath = args.filePath
 logger.info('[Posts] File path: {0}, Kafka address: {1}, Topic name: {2}'.format(postsFilePath, args.kafkaAddress, args.topicName))
 
-t2 = threading.Thread(name='2', target=publishPostsToKafka, args=[postsFilePath, args.kafkaAddress, args.topicName, 0.08])
+t2 = threading.Thread(name='2', target=publishPostsToKafka, args=[postsFilePath, args.kafkaAddress, args.topicName, 0.05])
 
 t2.start()
