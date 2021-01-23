@@ -19,6 +19,7 @@ def publishPostsToKafka(postsFilePath, address, topic, delay):
     data = etree.parse(postsFilePath)
     root = data.getroot()
 
+    lastCreationDate = datetime.strptime('2011-09-19T08:11:07.403', '%Y-%m-%dT%H:%M:%S.%f')
     cnt = 0;
     try:
         for elem in root:
@@ -27,6 +28,12 @@ def publishPostsToKafka(postsFilePath, address, topic, delay):
                message[key] = value
 
             #print(json.dumps(message))
+            #logger.info(json.dumps(message))
+
+            creationDate = datetime.strptime(message["CreationDate"], '%Y-%m-%dT%H:%M:%S.%f')
+
+            if creationDate <= lastCreationDate:
+                continue;
 
             producer.send(topic, value=message)
             cnt += 1
@@ -34,8 +41,8 @@ def publishPostsToKafka(postsFilePath, address, topic, delay):
                 logger.info('[Posts] Sent {0} messages'.format(cnt))
                 logger.info(json.dumps(message))
 
-            #if cnt > 30:
-            #    break;
+            if cnt > 30:
+                break;
             sleep(delay)
         logger.info('[Posts] Producer completed')
     except KeyboardInterrupt:
