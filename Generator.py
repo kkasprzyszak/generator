@@ -27,9 +27,6 @@ def publishPostsToKafka(postsFilePath, address, topic, delay):
                message[key] = value
 
             #print(json.dumps(message))
-            #logger.info(json.dumps(message))
-
-            creationDate = datetime.strptime(message["CreationDate"], '%Y-%m-%dT%H:%M:%S.%f')
 
             producer.send(topic, value=message)
             cnt += 1
@@ -37,8 +34,8 @@ def publishPostsToKafka(postsFilePath, address, topic, delay):
                 logger.info('[Posts] Sent {0} messages'.format(cnt))
                 logger.info(json.dumps(message))
 
-            if cnt > 30:
-                break;
+            #if cnt > 30:
+            #    break;
             sleep(delay)
         logger.info('[Posts] Producer completed')
     except KeyboardInterrupt:
